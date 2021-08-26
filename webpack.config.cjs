@@ -16,8 +16,10 @@ module.exports = {
     compress: true,
     port: 8080,
     host: '0.0.0.0',
-    publicPath: '/assets/',
     historyApiFallback: true,
+    static: {
+      directory: path.join(__dirname, 'assets'),
+    },
   },
   plugins: [
     new MiniCssExtractPlugin(),
