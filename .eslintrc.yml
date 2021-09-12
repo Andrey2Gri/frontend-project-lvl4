@@ -9,7 +9,6 @@ extends:
   - airbnb
   - "plugin:functional/external-recommended"
   - "plugin:functional/recommended"
-  - "plugin:jest/recommended"
   - "plugin:react/recommended"
 
 parser: babel-eslint
@@ -25,9 +24,11 @@ settings:
     - webpack
 
 rules:
+  import/extensions: 0
   react/prop-types: 0
   no-console: 0
   import/no-extraneous-dependencies: 0
+  react/jsx-filename-extension: 0
   functional/no-conditional-statement: 0
   functional/no-expression-statement: 0
   functional/immutable-data: 0

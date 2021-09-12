@@ -38,8 +38,8 @@ const LoginForm = () => {
           placeholder="username"
           isInvalid={!!formik.errors.username}
         />
-        {formik.touched.username && formik.errors.username ?
-          (<Form.Control.Feedback tooltip type="invalid">{formik.errors.username}</Form.Control.Feedback>) : null}
+        {formik.touched.username && formik.errors.username
+          ? (<Form.Control.Feedback tooltip type="invalid">{formik.errors.username}</Form.Control.Feedback>) : null}
       </FloatingLabel>
       <FloatingLabel className="mb-4" controlId="floatingPassword" label="Пароль">
         <Form.Control
