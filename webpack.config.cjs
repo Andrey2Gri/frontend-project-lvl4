@@ -6,7 +6,7 @@ const mode = process.env.NODE_ENV || 'development';
 module.exports = {
   mode,
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['', '.js', '.jsx'],
   },
   output: {
     path: path.join(__dirname, 'dist', 'public'),
