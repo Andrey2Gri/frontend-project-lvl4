@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   BrowserRouter as Router,
   Switch,
@@ -8,21 +8,52 @@ import {
 
 import LoginPage from './LoginPage.jsx';
 import NotFoundPage from './NotFoundPage.jsx';
+import authContext from '../contexts/index.jsx';
+import useAuth from '../hooks/index.jsx';
+
+const AuthProvider = ({ children }) => {
+  const [loggedIn, setLoggedIn] = useState(false);
+  const logIn = () => setLoggedIn(true);
+  const logOut = () => {
+    localStorage.removeItem('userId');
+    setLoggedIn(false);
+  };
+  return (
+    <authContext.Provider value={{ loggedIn, logIn, logOut }}>
+      {children}
+    </authContext.Provider>
+  );
+};
+
+const PrivateRoute = ({ children, path }) => {
+  const auth = useAuth();
+  return (
+    <Route
+      path={path}
+      render={({ location }) => (auth.loggedIn
+        ? children
+        : <Redirect to={{ pathname: '/login', state: { from: location } }} />
+      )}
+    />
+  );
+};
 
 const App = () => (
-  <Router>
-    <Switch>
-      <Route exact path="/">
-        <Redirect to="/login" />
-      </Route>
-      <Route path="/login">
-        <LoginPage />
-      </Route>
-      <Route path="*">
-        <NotFoundPage />
-      </Route>
-    </Switch>
-  </Router>
+  <AuthProvider>
+    <Router>
+      <Switch>
+        <Route path="/login">
+          <LoginPage />
+        </Route>
+        <PrivateRoute exact path="/">
+          <h1>Chat</h1>
+        </PrivateRoute>
+        <Route path="*">
+          <NotFoundPage />
+        </Route>
+      </Switch>
+    </Router>
+  </AuthProvider>
 );
 
 export default App;

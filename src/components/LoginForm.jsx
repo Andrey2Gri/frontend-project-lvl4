@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -6,8 +7,20 @@ import {
   Form,
   FloatingLabel,
 } from 'react-bootstrap';
+import { useLocation, useHistory } from 'react-router-dom';
+import routes from '../routes.js';
+
+import useAuth from '../hooks/index.jsx';
+
+const ControlInvalidFeedback = ({ error }) => (
+  <Form.Control.Feedback tooltip type="invalid">{error}</Form.Control.Feedback>
+);
 
 const LoginForm = () => {
+  const auth = useAuth();
+  const [authFailed, setAuthFailed] = useState(false);
+  const location = useLocation();
+  const history = useHistory();
   const formik = useFormik({
     initialValues: {
       username: '',
@@ -21,8 +34,20 @@ const LoginForm = () => {
     }),
     validateOnChange: false,
     validateOnBlur: false,
-    onSubmit: (values, formikBag) => {
-      console.log(values, formikBag);
+    onSubmit: async (values) => {
+      try {
+        setAuthFailed(false);
+        const res = await axios.post(routes.loginPath(), values);
+        console.log(res);
+        localStorage.setItem('userId', JSON.stringify(res.data));
+        auth.logIn();
+        const { from } = location.state || { from: { pathname: '/' } };
+        history.replace(from);
+      } catch (e) {
+        setAuthFailed(true);
+        console.log(e);
+        throw e;
+      }
     },
   });
 
@@ -36,10 +61,8 @@ const LoginForm = () => {
           type="text"
           name="username"
           placeholder="username"
-          isInvalid={!!formik.errors.username}
+          isInvalid={authFailed}
         />
-        {formik.touched.username && formik.errors.username
-          ? (<Form.Control.Feedback tooltip type="invalid">{formik.errors.username}</Form.Control.Feedback>) : null}
       </FloatingLabel>
       <FloatingLabel className="mb-4" controlId="floatingPassword" label="Пароль">
         <Form.Control
@@ -48,8 +71,11 @@ const LoginForm = () => {
           type="password"
           name="password"
           placeholder="Password"
-          isInvalid={!!formik.errors.password}
+          isInvalid={authFailed}
         />
+        {authFailed
+          ? <ControlInvalidFeedback error="Неверные имя пользователя или пароль" />
+          : null}
       </FloatingLabel>
       <Button className="w-100 mb-3" variant="outline-primary" type="submit">Войти</Button>
     </Form>
