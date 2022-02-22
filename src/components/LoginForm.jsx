@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -21,6 +21,12 @@ const LoginForm = () => {
   const [authFailed, setAuthFailed] = useState(false);
   const location = useLocation();
   const history = useHistory();
+  const inputRef = useRef();
+
+  useEffect(() => {
+    inputRef.current.focus();
+  }, []);
+
   const formik = useFormik({
     initialValues: {
       username: '',
@@ -38,15 +44,17 @@ const LoginForm = () => {
       try {
         setAuthFailed(false);
         const res = await axios.post(routes.loginPath(), values);
-        console.log(res);
         localStorage.setItem('userId', JSON.stringify(res.data));
         auth.logIn();
         const { from } = location.state || { from: { pathname: '/' } };
-        history.replace(from);
-      } catch (e) {
-        setAuthFailed(true);
-        console.log(e);
-        throw e;
+        history.push(from);
+      } catch (err) {
+        if (err.isAxiosError && err.response.status === 401) {
+          setAuthFailed(true);
+          inputRef.current.select();
+          return;
+        }
+        throw err;
       }
     },
   });
@@ -62,6 +70,7 @@ const LoginForm = () => {
           name="username"
           placeholder="username"
           isInvalid={authFailed}
+          ref={inputRef}
         />
       </FloatingLabel>
       <FloatingLabel className="mb-4" controlId="floatingPassword" label="Пароль">
@@ -74,7 +83,7 @@ const LoginForm = () => {
           isInvalid={authFailed}
         />
         {authFailed
-          ? <ControlInvalidFeedback error="Неверные имя пользователя или пароль" />
+          ? <ControlInvalidFeedback error="the username or password is incorrect" />
           : null}
       </FloatingLabel>
       <Button className="w-100 mb-3" variant="outline-primary" type="submit">Войти</Button>
